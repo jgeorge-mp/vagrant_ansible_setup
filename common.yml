@@ -1,0 +1,44 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    pub_key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDHylfuMhfZ9wND/0fZXRm2I7f79fgIPZ0eBs784MAd5y9esSAo8WIj1X1mUQIbcdsYdOAczREB2B8p5T6OJbQTg581Xon5N9gYZXkz5zUMQJvPGC7JaOqbmXiYX0G1PJdfdExuhGFZsgsN7y+LbUV/B3uda9wtizHurwcaIChWFm/DZxsObF30amlDiAuQPDs991yowQ9oMJFXwo8izdvpoI+bN7qI555GmFI9Fgv8lnroNu7qw7JZfhfePAvhpyNUdDLfP76zW9YA5BDPuduOFksk96DVtPI1H5yOCsgi1J7rZ5nc66OJKKpvuDWBN2g20EfbIbGlOkoABftB59UaJkJP91rUH3WahZsYCPm8lTZqKRvXjhA3u2qrXc9J3jBHKoszgu7cX5ZdHtX+xk8/kAbRk0miuILpgkN6uVVmihcMl0KEYYhL2hIKccMuYetUfUS2qlnDSev7o74MFxMHvze6QAPAB4gTj1fdibEHhPp5bZ42PdOc6DMlbYMha00= jpg@JPG"
+
+  tasks:
+  - name: make directory
+    file: 
+      path: "/home/vagrant/.ssh"
+      state: directory
+
+  - name: create an empty file
+    file:
+      path: "/home/vagrant/.ssh/authorized_keys"
+      state: touch
+
+  - name: copy pub key
+    lineinfile:
+       path: "/home/vagrant/.ssh/authorized_keys"
+       line: "{{ pub_key }}"
+       insertafter: "EOF"
+       mode: 0644
+
+  - name: Install EPEL repo
+    yum:
+      name: epel-release
+      state: present
+    when: ansible_facts['distribution'] == "CentOS" or ansible_facts['os_family'] == "RedHat"
+
+    #  - name: Install Ansible
+    # yum:
+    #  name: python3
+    #  state: present
+    #when: ansible_facts['distribution'] == "CentOS" or ansible_facts['os_family'] == "RedHat" 
+
+    #  - name: Install git, nmap and net-tools
+    #yum:
+    #  state: present
+    #  name:
+    #    - git
+    #    - nmap
+    #    - net-tools
+    #ignore_errors: true
