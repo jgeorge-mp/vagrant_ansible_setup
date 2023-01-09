@@ -1,0 +1,55 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: print var
+    debug:
+       msg: "{{ansible_distribution}}"
+
+  - name: block for ubuntu
+    block:
+    - name: Install NTP
+      apt: 
+        name: chrony 
+        state: present
+        update_cache: yes
+      ignore_errors: yes
+    - name: Update conf file
+      copy:
+        src: Ubuntu-chrony.conf 
+        dest: /etc/chrony/chrony.conf
+        mode: 0644
+        owner: root
+        group: root
+
+    - name: start chrony service
+      service:
+         name: chronyd
+         state: started
+         enabled: yes
+         masked: no
+    when: ansible_distribution == 'Ubuntu'
+
+  - name: block for redhat and centos
+    block:
+    - name: install chrony on Centos and Redhat
+      yum:
+        name: chrony
+        state: present
+    - name: Update config file
+      copy:
+         src: "{{ ansible_distribution }}-chrony.conf"
+         dest: /etc/chrony.conf 
+         mode: 0644
+         owner: root
+         group: root
+
+    - name: Start service
+      service:
+          name: chronyd
+          state: started
+          enabled: yes
+          masked: no
+         
+    when: (ansible_distribution == 'RedHat') or (ansible_distribution == 'CentOS')
+
